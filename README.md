@@ -13,7 +13,7 @@ pkg update && pkg upgrade -y
 pkg install curl jq
 ```
 ```
-curl -LO https://raw.githubusercontent.com/Telegram-Bot-Token/main/Telegram_Bot_info && chmod +x Telegram_Bot_info
+curl -LO https://github.com/Masterdas/Telegram-Bot-Token/blob/main/Telegram_Bot_info && chmod +x Telegram_Bot_info
 ```
 ```
 nano Telegram_Bot_info
