@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Colors
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[1;36m'
+NC='\033[0m'
+
+# Bot Token
+TOKEN="Enter_Your_Bot_Token"
+API_URL="https://api.telegram.org/bot$TOKEN"
+LAST_UPDATE_ID=0
+
+clear
+echo -e "${CYAN}"
+echo "███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗"
+echo "████╗  ██║██╔════╝██║  ██║██║   ██║██╔════╝"
+echo "██╔██╗ ██║█████╗  ███████║██║   ██║█████╗  "
+echo "██║╚██╗██║██╔══╝  ██╔══██║██║   ██║██╔══╝  "
+echo "██║ ╚████║███████╗██║  ██║╚██████╔╝███████╗"
+echo "╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝"
+echo "═══════════════ Powered by ZeroDark Nexus ═══════════════"
+echo -e "${NC}"
+echo -e "${YELLOW}🚀 Telegram Bot Token Verifier by Mahadeb R..das${NC}"
+echo -e "${CYAN}📺 YouTube: https://youtube.com/@zerodarknexus"
+echo -e "📢 Telegram: @ZeroHackNexus${NC}"
+echo -e "${GREEN}✔ Bot Started...${NC}"
+
+while true; do
+    UPDATE=$(curl -s "$API_URL/getUpdates?offset=$((LAST_UPDATE_ID+1))")
+    UPDATE_ID=$(echo "$UPDATE" | jq -r '.result[0].update_id // empty')
+    MESSAGE=$(echo "$UPDATE" | jq -r '.result[0].message.text // empty')
+    CHAT_ID=$(echo "$UPDATE" | jq -r '.result[0].message.chat.id // empty')
+
+    if [ -n "$UPDATE_ID" ] && [ "$UPDATE_ID" -gt "$LAST_UPDATE_ID" ]; then
+        LAST_UPDATE_ID=$UPDATE_ID
+
+        if [[ "$MESSAGE" == "/start" ]]; then
+            echo -e "${GREEN}📩 New /start from $CHAT_ID${NC}"
+            curl -s -X POST "$API_URL/sendMessage" \
+                -d "chat_id=$CHAT_ID" \
+                -d "text=👋 Welcome to the Telegram Bot Token Verifier!
+
+Send your bot token to verify it (Format: 1234567890:ABCdefGHIJKLmnopQRSTuvwXYZ)
+
+👨‍💻 Created by: Mahadeb R..das
+📺 YouTube: https://youtube.com/@zerodarknexus
+📢 Telegram: @ZeroHackNexus"
+        
+        elif [[ "$MESSAGE" =~ ^[0-9]+:[a-zA-Z0-9_-]+$ ]]; then
+            echo -e "${YELLOW}🔍 Verifying token...${NC}"
+            VERIFY=$(curl -s "https://api.telegram.org/bot$MESSAGE/getMe")
+            
+            if [[ "$VERIFY" == *"ok\":true"* ]]; then
+                BOT_NAME=$(echo "$VERIFY" | jq -r '.result.username')
+                echo -e "${GREEN}✅ Valid! Bot: @$BOT_NAME${NC}"
+                curl -s -X POST "$API_URL/sendMessage" \
+                    -d "chat_id=$CHAT_ID" \
+                    -d "text=✅ Verified!
+Bot: @$BOT_NAME
+
+⚠️ Keep your token secret!
+
+📺 YouTube: https://youtube.com/@zerodarknexus
+📢 Telegram: @ZeroHackNexus"
+            else
+                echo -e "${RED}❌ Invalid token${NC}"
+                curl -s -X POST "$API_URL/sendMessage" \
+                    -d "chat_id=$CHAT_ID" \
+                    -d "text=❌ Invalid token!
+Please check your format and try again."
+            fi
+        fi
+    fi
+    sleep 2
+done
